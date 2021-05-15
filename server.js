@@ -1,13 +1,13 @@
 const express = require('express');
-const PORT = process.env.PORT || 3001;
-const app = express();
 const { animals } = require('./data/animals');
 
+const PORT = process.env.PORT || 3001;
+const app = express();
+
 function filterByQuery(query, animalsArray) {
-    let personalityTraitsArray = [];
-    // Note that we save the animalsArray as filteredResults here:
-    let filteredResults = animalsArray;
-    if (query.personalityTraits) {
+  let personalityTraitsArray = [];
+  let filteredResults = animalsArray;
+  if (query.personalityTraits) {
       // Save personalityTraits as a dedicated array.
       // If personalityTraits is a string, place it into a new array and save.
       if (typeof query.personalityTraits === 'string') {
@@ -32,17 +32,32 @@ function filterByQuery(query, animalsArray) {
     if (query.name) {
       filteredResults = filteredResults.filter(animal => animal.name === query.name);
     }
-    // return the filtered results:
     return filteredResults;
-}
-
-app.get('/api/animals', (req, res) => {
+  }
+  
+  function findById(id, animalsArray) {
+    const result = animalsArray.filter(animal => animal.id === id)[0];
+    return result;
+  }
+  
+  app.get('/api/animals', (req, res) => {
     let results = animals;
-    if (req.query){
-        results = filterByQuery(req.query, results);
+    if (req.query) {
+      results = filterByQuery(req.query, results);
     }
     res.json(results);
-});
-app.listen(PORT, ()=>{
+  });
+  
+  app.get('/api/animals/:id', (req, res) => {
+    const result = findById(req.params.id, animals);
+    if (result) {
+      res.json(result);
+    } else {
+      res.send(404);
+    }
+  });
+  
+  app.listen(PORT, () => {
     console.log(`API server now on port ${PORT}!`);
-});
+  });
+  
